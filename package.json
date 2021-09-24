@@ -1,5 +1,5 @@
 {
-  "type":"module",
+  "type": "module",
   "name": "tainan_linebot",
   "version": "1.0.0",
   "description": "",
@@ -9,5 +9,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "linebot": "^1.6.1"
+  }
 }
