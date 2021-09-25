@@ -24,6 +24,37 @@ getData()
 // 讀取後可以使用 process.env.變數使用
 dotenv.config()
 
+// 計算距離公式
+// lat1 點 1 的緯度
+// lon1 點 1 的經度
+// lat2 點 2 的緯度
+// lon2 點 2 的經度
+// unit 單位，不傳是英里，K 是公里，N 是海里
+const distance = (lat1, lon1, lat2, lon2, unit = 'K') => {
+  if (lat1 === lat2 && lon1 === lon2) {
+    return 0
+  } else {
+    const radlat1 = (Math.PI * lat1) / 180
+    const radlat2 = (Math.PI * lat2) / 180
+    const theta = lon1 - lon2
+    const radtheta = (Math.PI * theta) / 180
+    let dist = Math.sin(radlat1) * Math.sin(radlat2) + Math.cos(radlat1) * Math.cos(radlat2) * Math.cos(radtheta)
+    if (dist > 1) {
+      dist = 1
+    }
+    dist = Math.acos(dist)
+    dist = (dist * 180) / Math.PI
+    dist = dist * 60 * 1.1515
+    if (unit === 'K') {
+      dist = dist * 1.609344
+    }
+    if (unit === 'N') {
+      dist = dist * 0.8684
+    }
+    return dist
+  }
+}
+
 const bot = linebot({
   channelId: process.env.CHANNEL_ID,
   channelSecret: process.env.CHANNEL_SECRET,
@@ -232,5 +263,43 @@ bot.on('message', async event => {
     fs.writeFileSync('aaa.json', JSON.stringify(message, null, 2))
     console.log(message)
     event.reply(message)
+  }
+
+  if (event.message.type === 'location') {
+    // const result = data.filter(d => {
+    //   return d.行政區 === event.message.text
+    // })[0]
+    // event.reply({
+    //   type: 'location',
+    //   title: result.行政區,
+    //   address: result.地點,
+    //   latitude: result.經度,
+    //   longitude: result.緯度
+    // })
+    // console.log(event.message)
+    let arr = []
+    for (const d of data) {
+      const dis = distance(d.long, d.lat, event.message.longitude, event.message.latitude)
+      if (dis <= 2) {
+        arr.push({
+          type: 'location',
+          title: d.name,
+          address: d.address,
+          latitude: d.lat,
+          longitude: d.long,
+          dis
+        })
+      }
+    }
+    arr = arr
+      .sort((a, b) => {
+        return a.dis - b.dis
+      })
+      .map(a => {
+        delete a.dis
+        return a
+      })
+      .slice(0, 4)
+    event.reply(arr)
   }
 })
