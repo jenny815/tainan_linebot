@@ -263,9 +263,7 @@ bot.on('message', async event => {
     fs.writeFileSync('aaa.json', JSON.stringify(message, null, 2))
     console.log(message)
     event.reply(message)
-  }
-
-  if (event.message.type === 'location') {
+  } else if (event.message.type === 'location') {
     // const result = data.filter(d => {
     //   return d.行政區 === event.message.text
     // })[0]
